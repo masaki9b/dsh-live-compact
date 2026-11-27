@@ -237,7 +237,7 @@ for (const [name, damage] of Object.entries(damageCases)) {
     assert.equal(h.pruneCalls, 0);
     const refused = engine.rawSeen.get(engine.rawKey(f.session, "long"));
     assert.equal(refused.ok, false);
-    assert.equal(pointerFor(refused), "无完整备份 [long]");
+    assert.equal(pointerFor(refused), "No complete backup [long]");
     await engine.finishTurn(f.agent());
     assert.equal(f.summaries().length, 0);
     assert.deepEqual(f.session.surface.nodes, surface);

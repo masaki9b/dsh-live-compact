@@ -39,8 +39,8 @@ const pushed = buildCard("", "", [{
   turn: 5,
 }]);
 assert.equal(pushed.text.includes("已推送"), false);
-assert.equal(pushed.text.includes("第 5 轮 `git push origin main` 失败 [call-push]"), true);
-assert.equal(pushed.text.includes("退出 0"), false);
+assert.equal(pushed.text.includes("Turn 5 `git push origin main` failed [call-push]"), true);
+assert.equal(pushed.text.includes("exited 0"), false);
 
 const started = "started background job bash-9\n";
 assert.equal(toolEvidenceLine({
@@ -52,8 +52,8 @@ assert.equal(toolEvidenceLine({
 }), "");
 assert.equal(backgroundJobId("[still running after 1000ms; moved to background job bash-9]"), "bash-9");
 
-assert.equal(demoteEvidence("第 1 轮 `git push` 退出 0 [missing]", new Set(["call-real"])), "");
-assert.deepEqual(admitEvidence(["第 1 轮 `git status` 退出 0 [missing]"], new Set()), []);
+assert.equal(demoteEvidence("Turn 1 `git push` exited 0 [missing]", new Set(["call-real"])), "");
+assert.deepEqual(admitEvidence(["Turn 1 `git status` exited 0 [missing]"], new Set()), []);
 
 const keptRound = buildCard("", "", [
   { role: "tool", text: "ok\n[exit code: 0]", command: "git commit -m x", toolCallId: "keep-me", turn: 8, inCut: false },
@@ -61,7 +61,7 @@ const keptRound = buildCard("", "", [
 ]);
 assert.equal(keptRound.text.includes("keep-me"), false);
 assert.equal(keptRound.text.includes("git commit"), false);
-assert.equal(keptRound.text.includes("第 4 轮 `git status` 退出 0 [cut-me]"), true);
+assert.equal(keptRound.text.includes("Turn 4 `git status` exited 0 [cut-me]"), true);
 assert.equal(evidenceLines([{ role: "tool", text: "ok", toolCallId: "keep-me", command: "git commit", inCut: false }]).length, 0);
 
 const jobs = collectJobs([
@@ -75,15 +75,15 @@ const jobs = collectJobs([
 ]);
 assert.equal(jobs[0].open, false);
 assert.equal(jobs[0].status, "killed");
-assert.equal(jobCardLines(jobs).some((line) => line.includes("未结束")), false);
-assert.equal(jobCardLines(jobs).some((line) => line.includes("第 7 轮结束")), true);
+assert.equal(jobCardLines(jobs).some((line) => line.includes("still running")), false);
+assert.equal(jobCardLines(jobs).some((line) => line.includes("finished on turn 7")), true);
 const failedKill = collectJobs([
   { type: "job/registered", data: { turn: 2, jobId: "bash-k", label: "serve", toolCall: { callId: "call-k" } } },
   { type: "tool/call", data: { turn: 4, callId: "call-kill-fail", name: "job_kill", arguments: JSON.stringify({ job_id: "bash-k" }) } },
   { type: "tool/result", data: { turn: 4, message: { role: "tool", toolCallId: "call-kill-fail", content: "nope\n[exit code: 1]" } } },
 ]);
 assert.equal(failedKill[0].open, true);
-assert.equal(jobCardLines(failedKill).some((line) => line.includes("切时未结束")), true);
+assert.equal(jobCardLines(failedKill).some((line) => line.includes("still running at compaction time")), true);
 const flaggedKill = collectJobs([
   { type: "job/registered", data: { turn: 2, jobId: "bash-flag", label: "serve", toolCall: { callId: "call-flag" } } },
   { type: "tool/call", data: { turn: 5, callId: "call-flag-kill", name: "KillShell", arguments: JSON.stringify({ job_id: "bash-flag" }) } },
@@ -123,7 +123,7 @@ const openCard = buildCard("必须保留 ledger.txt", "", [
 ], { jobs: stillOpen });
 assert.equal(openCard.ok, true);
 assert.equal(openCard.text.includes("bash-open"), true);
-assert.equal(openCard.text.includes("切时未结束，之后的文件以磁盘为准"), true);
+assert.equal(openCard.text.includes("still running at compaction time; check files on disk for later changes"), true);
 assert.equal(openCard.text.includes("[call-open]"), true);
 assert.equal(jobCutDecision(stillOpen).cut, true);
 assert.equal(jobCutDecision([{ jobId: "forever", open: true, startTurn: 1 }]).cut, true);
@@ -133,8 +133,8 @@ const settled = collectJobs([
   { type: "job/settled", data: { turn: 7, jobId: "sub-1", label: "review", kind: "subagent", status: "completed", toolCall: { callId: "call-sub" } } },
 ]);
 assert.equal(settled[0].open, false);
-assert.equal(jobCardLines(settled, { startTurn: 3, endTurn: 4 }).some((line) => line.includes("未结束")), false);
-assert.equal(jobCardLines(settled, { startTurn: 3, endTurn: 4 }).some((line) => line.includes("第 7 轮结束")), true);
+assert.equal(jobCardLines(settled, { startTurn: 3, endTurn: 4 }).some((line) => line.includes("still running")), false);
+assert.equal(jobCardLines(settled, { startTurn: 3, endTurn: 4 }).some((line) => line.includes("finished on turn 7")), true);
 assert.equal(jobCardLines(settled, { startTurn: 8, endTurn: 9 }).length, 0);
 
 const root = join(tmpdir(), `spine-three-${Date.now()}`);
@@ -162,14 +162,14 @@ assert.equal(existsSync(join(root, rawName("call-pruned"))), false);
 writeFileSync(join(root, "not-dir"), "x");
 const blocked = captureToolResult({ dir: join(root, "not-dir", "raw"), toolCallId: "call-blocked", text: "hello" });
 assert.equal(blocked.ok, false);
-assert.equal(pointerFor(blocked), "无完整备份 [call-blocked]");
+assert.equal(pointerFor(blocked), "No complete backup [call-blocked]");
 assert.equal(pointerFor(blocked).includes(root), false);
 const pointer = pointerFor(saved);
-assert.equal(pointer.includes("第 4 轮读到的 ledger.txt"), true);
+assert.equal(pointer.includes("Read ledger.txt on turn 4"), true);
 assert.equal(pointer.includes(`sha256:${saved.sha256.slice(0, 12)}`), true);
-assert.equal(pointer.includes(`${saved.bytes}字节`), true);
+assert.equal(pointer.includes(`${saved.bytes} bytes`), true);
 assert.equal(pointer.includes("[call-raw]"), true);
-assert.equal(pointer.includes("当前内容"), false);
+assert.equal(pointer.includes("current content"), false);
 assert.equal(readResultLabel("bash", "ledger.txt", 4), "");
 const rawCard = buildCard("", "", [{
   role: "tool",
@@ -181,7 +181,7 @@ const rawCard = buildCard("", "", [{
   raw: saved,
 }]);
 assert.equal(rawCard.text.includes(saved.path), false);
-assert.equal(rawCard.text.includes("不是备份文件路径"), true);
+assert.equal(rawCard.text.includes("not backup file paths"), true);
 assert.equal(rawCard.text.includes("[... tool result middle pruned ...]"), false);
 const trust = join(root, "trust");
 mkdirSync(trust);
@@ -193,7 +193,7 @@ assert.equal(readFileSync(trusted.path, "utf8"), "ORIGINAL");
 writeFileSync(trusted.path, "TAMPERED");
 const reread = captureToolResult({ dir: trust, toolCallId: "id-trust", text: "ORIGINAL", turn: 1, name: "bash" });
 assert.equal(reread.ok, false);
-assert.equal(pointerFor(trusted), "无完整备份 [id-trust]");
+assert.equal(pointerFor(trusted), "No complete backup [id-trust]");
 assert.equal(verifiedRaw(trusted).ok, false);
 assert.equal(rawExcerptText("surface original", trusted).text, "surface original");
 assert.equal(rawExcerptText("head\n\n[... tool result middle pruned ...]\n\ntail", trusted).text, "");
@@ -231,9 +231,9 @@ assert.equal(restoreToolText({ role: "tool", content: "pruned [... tool result m
 const prunedMessages = [{ role: "tool", toolCallId: "missing", content: "x\n[... tool result middle pruned ...]\n" }];
 assert.equal(backupClaimOk(prunedMessages), false);
 assert.equal(backupClaimOk([restored]), true);
-const claimed = `卡片\n省略的工具原文在 /tmp/cut.txt。只读这个文件所在目录，不要扫别的会话。需要这条原文再读，不要默认读进来。`;
-assert.equal(withoutFullBackupClaim(claimed, "/tmp/cut.txt").includes("省略的工具原文在"), false);
-assert.equal(withoutFullBackupClaim(claimed, "/tmp/cut.txt").includes("无完整备份"), true);
+const claimed = `Card\nOmitted raw tool output is stored at /tmp/cut.txt. Only read within that file's directory; do not scan other sessions. Read it only if needed, not by default.`;
+assert.equal(withoutFullBackupClaim(claimed, "/tmp/cut.txt").includes("Omitted raw tool output is stored at"), false);
+assert.equal(withoutFullBackupClaim(claimed, "/tmp/cut.txt").includes("no complete backup"), true);
 
 let pruned = false;
 assert.throws(() => runPruneAfterCapture(["call-raw"], new Set(), () => {

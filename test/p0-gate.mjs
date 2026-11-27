@@ -154,7 +154,7 @@ check("p0-2 omitted long tool line refuses even with empty kept", () => {
   assert.equal(card.text.includes(fact), false);
   assert.match(
     card.text,
-    /Kept lines:\n- \(none\)\n工具证据:/,
+    /Kept lines:\n- \(none\)\nTool evidence:/,
   );
   assert.equal(card.ok, false);
   assert.equal(card.missing.includes(line), true);
@@ -443,7 +443,7 @@ await checkAsync("p0-12 commitSelectedSpan writes a path-free spine checkpoint",
     for (const forbidden of [
       "compacted-summary",
       "compact-checkpoint",
-      "省略的工具原文在",
+      "Omitted raw tool output is stored at",
       "SPINE_SHADOW_DIR",
       shadowRoot,
       conversationDir,
@@ -469,7 +469,7 @@ check("p0-1 card text does not receive the backup path", () => {
   assert.equal(claim.includes(path), true);
   const cleaned = withoutFullBackupClaim(`前文\n${claim}\n后文`, path);
   assert.equal(cleaned.includes(path), false);
-  assert.equal(cleaned.includes("省略的工具原文在"), false);
+  assert.equal(cleaned.includes("Omitted raw tool output is stored at"), false);
   assert.equal(cleaned.includes("前文"), true);
   assert.equal(cleaned.includes("后文"), true);
   assert.notEqual(cleaned, claim);
