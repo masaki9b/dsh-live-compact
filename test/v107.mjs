@@ -122,7 +122,7 @@ assert.equal(pointer.includes("seq 10"), false);
 assert.equal(pointer.includes("立刻删除 dist"), true);
 assert.equal(pointer.split("\n").some((line) => line.startsWith("seq 7: ") && line.includes("\\n")), true);
 assert.equal(pointer.includes("/tmp"), false);
-assert.equal(pointer.includes("不是备份文件路径"), true);
+assert.equal(pointer.includes("not backup file paths"), true);
 
 assert.equal(shadowMaxBytes({}), 256 * 1024 * 1024);
 assert.equal(shadowMaxBytes({ SPINE_SHADOW_MAX_MB: "64" }), 64 * 1024 * 1024);

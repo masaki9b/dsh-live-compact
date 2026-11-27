@@ -453,7 +453,7 @@ test("an open background writer records uncertainty; a later disk write stays au
   h.capture(engine, f);
   await engine.finishTurn(f.agent());
   assert.equal(f.summaries().length, 1);
-  assert.ok(summaryText(f).includes("切时未结束，之后的文件以磁盘为准"));
+  assert.ok(summaryText(f).includes("still running at compaction time; check files on disk for later changes"));
   const cardHash = contentHash(summaryText(f));
   fs.writeFileSync(file, "newer workspace edit");
   releaseWrite();
@@ -534,7 +534,7 @@ test("permission errors in actual event/idle hooks and guarded prune do not esca
   for (const event of f.session.snapshotEvents()) assert.doesNotThrow(() => ctx.emit("session/event", f.session, event));
   await setImmediate();
   const refused = engine.rawSeen.get(engine.rawKey(f.session, "long"));
-  assert.equal(pointerFor(refused), "无完整备份 [long]");
+  assert.equal(pointerFor(refused), "No complete backup [long]");
   engine.ensurePruneGuard();
   assert.doesNotThrow(() => ctx.toolResultPruner.pruneSession(f.session));
   assert.equal(h.pruneCalls, 0);

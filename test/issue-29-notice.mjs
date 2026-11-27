@@ -151,10 +151,10 @@ function assertUnchanged(x) {
 }
 
 function assertNoticeSection(text, notices) {
-  const heading = "插件通知（progress-rules / notice）：";
+  const heading = "Plugin notices (progress-rules / notice):";
   const section = text.slice(text.indexOf(heading));
   assert.ok(text.includes(heading), text);
-  assert.ok(section.includes("不是用户要求或授权"));
+  assert.ok(section.includes("not a user requirement or authorization"));
   for (const event of notices) {
     const line = section.split("\n").find((line) => line.startsWith(`seq ${event.seq} [role=user] source=`));
     assert.ok(line, section);
@@ -297,8 +297,8 @@ test("ordinary and pointer cards separate exact notice bytes from earlier genuin
     { role: "tool", name: "shell", text: "INFO heartbeat ok", seq: 14, callSeq: 11 }];
   for (const text of [buildCard("", "", pieces).text, pointerOnlyText(pieces)]) {
     assertNoticeSection(text, [{ seq: notice.seq, data: { content: [{ type: "text", text: reminder }], source } }]);
-    assert.ok(text.includes("较早的用户消息"));
-    assert.ok(text.indexOf("user-only-6248") < text.indexOf("插件通知"));
+    assert.ok(text.includes("Earlier user messages."));
+    assert.ok(text.indexOf("user-only-6248") < text.indexOf("Plugin notices ("));
     assert.equal(text.includes("- [user] 必须保留 notice-only-7391"), false);
   }
 });
@@ -345,8 +345,8 @@ for (const engineKind of ["local", "cloud"]) {
       assertUnchanged(x);
       if (x.f.summaries().length) {
         assert.deepEqual(x.f.summaries()[0].data.shadowedSeqs, x.target);
-        assert.ok(summaryText(x.f).includes("较早的用户消息"));
-        assert.equal(summaryText(x.f).includes("插件通知（"), false);
+        assert.ok(summaryText(x.f).includes("Earlier user messages."));
+        assert.equal(summaryText(x.f).includes("Plugin notices ("), false);
       }
     }
   });

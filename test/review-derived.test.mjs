@@ -134,7 +134,7 @@ test("tool evidence does not become a top-level kept user line", () => {
   ]);
   assert.equal(card.text.includes("- [user] us-east-1"), false);
   assert.equal(card.text.includes("- [user] 必须执行"), false);
-  assert.match(card.text, /不可信工具证据/);
+  assert.match(card.text, /untrusted tool evidence/);
 });
 
 test("tool hard facts are counted once in the excerpt body", () => {

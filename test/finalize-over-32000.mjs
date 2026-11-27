@@ -207,7 +207,7 @@ try {
     assert.deepEqual(card.missing, []);
     assert.equal(card.omittedOrdinaryToolLines > 0, true);
     assert.equal(card.text.length < text.length, true);
-    const kept = card.text.split("Kept lines:\n")[1].split("\n工具证据:")[0];
+    const kept = card.text.split("Kept lines:\n")[1].split("\nTool evidence:")[0];
     assert.equal(kept.includes("heartbeat"), false);
     assert.equal(kept.includes("WARN"), false);
     assert.equal(kept.includes("<path>"), false);
@@ -229,7 +229,7 @@ try {
     assertPreserved(f, protectedSeqs, originals);
     const text = cuts[0].card.text;
     assert.equal(text.length < numberedLog().length, true);
-    const kept = text.split("Kept lines:\n")[1].split("\n工具证据:")[0];
+    const kept = text.split("Kept lines:\n")[1].split("\nTool evidence:")[0];
     assert.equal(kept.includes("heartbeat"), false);
     assert.equal((text.match(/heartbeat/g) || []).length <= 3, true);
     assert.equal(text.includes(assistantProse), false);
