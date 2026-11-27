@@ -35,6 +35,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
+    "README.ja.md",
+    "README.zh-CN.md",
     "LICENSE"
   ],
   "keywords": [
